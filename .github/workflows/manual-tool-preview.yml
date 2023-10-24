@@ -30,4 +30,4 @@ jobs:
           gh pr review ${{ github.event.pull_request.number }} --comment -b "Changes based on the regeneration: \n\n\`\`\`diff\n$(cat changes.diff)\n\`\`\`"
         fi
       env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
