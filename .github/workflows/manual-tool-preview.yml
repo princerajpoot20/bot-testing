@@ -1,8 +1,10 @@
 name: Tools preview on PR level
 
 on:
-  pull_request:
-    types: [opened, reopened, synchronize, ready_for_review]
+  pull_request_target:
+    types:
+      - synchronize
+      - edited
 
 jobs:
   suggestChanges:
