@@ -8,26 +8,33 @@ on:
 
 jobs:
   reviewSuggestions:
-    if: github.repository == 'princerajpoot20/bot-testing'
+    if: github.repository == 'asyncapi/website'
     env:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
+    - name: Checkout Base Branch
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.event.pull_request.head.sha }}
+        ref: ${{ github.event.pull_request.base.ref }}
+        path: base
+    - name: Checkout PR Branch
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.pull_request.head.ref }}
+        path: pr
     - name: Use Node.js
       uses: actions/setup-node@v3
       with:
         node-version: 16.x
-    - name: Install dependencies
-      run: npm install
-    - name: Regenerate
-      run: npm run generate:tools
+    - name: Install dependencies and Regenerate for PR
+      run: |
+        cd pr
+        npm install
+        npm run generate:tools
     - name: Check and Suggest Changes
       run: |
-        git diff -U0 HEAD^ | grep '^+' | grep -Ev '^(--- a/|\+\+\+ b/)' > changes.diff
+        git diff -U0 base pr > changes.diff
         while IFS= read -r line; do
           line_content="${line#+}"
           file_name=$(echo "$line" | cut -d' ' -f2)
