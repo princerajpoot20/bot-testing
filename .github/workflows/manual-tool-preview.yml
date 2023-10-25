@@ -1,53 +1,39 @@
-name: List of all the tools used in AsyncAPI
+name: Review with Suggestions for Tool Changes
 
 on:
-  workflow_dispatch:
   pull_request_target:
     types:
       - synchronize
       - edited
 
 jobs:
-  regenerateTools:
+  reviewSuggestions:
     if: github.repository == 'princerajpoot20/bot-testing'
     env:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-    name: Regenerate tools.json
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16.x
-      - name: Install dependencies
-        run: npm install
-      - name: Regenerate
-        run: npm run generate:tools
-      - name: Check for changes and create patch
-        id: check-changes
-        run: |
-          git diff > tools.diff
-          if [[ -s tools.diff ]]; then
-            echo "::set-output name=has_changes::true"
-          fi
-      - name: Parse diff and generate suggestions
-        if: steps.check-changes.outputs.has_changes == 'true'
-        run: |
-          echo "Parsing diff and generating suggestions..."
-          BODY=""
-          while IFS= read -r line; do
-            if [[ "$line" == +* ]]; then
-              suggestion="${line#+}"
-              if [[ ! -z "$suggestion" && "$suggestion" != ' ' ]]; then
-                BODY+="\n\`\`\`suggestion\n$suggestion\n\`\`\`"
-              fi
-            fi
-          done < tools.diff
-          echo "BODY=$BODY" >> $GITHUB_ENV
-      - name: Post review with suggestions
-        if: steps.check-changes.outputs.has_changes == 'true' && env.BODY != ''
-        run: gh pr review ${{ github.event.pull_request.number }} --request-changes -b "$BODY"
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16.x
+    - name: Install dependencies
+      run: npm install
+    - name: Regenerate
+      run: npm run generate:tools
+    - name: Check and Suggest Changes
+      run: |
+        git diff -U0 HEAD^ | grep '^+' | grep -Ev '^(--- a/|\+\+\+ b/)' > changes.diff
+        while IFS= read -r line; do
+          line_content="${line#+}"
+          file_name=$(echo "$line" | cut -d' ' -f2)
+          start_line=$(echo "$line" | cut -d' ' -f3 | cut -d',' -f1)
+          gh pr review ${{ github.event.pull_request.number }} --comment -b "I suggest this change on \`$file_name\`:
+          \`\`\`suggestion
+          $line_content
+          \`\`\`"
+        done < changes.diff
