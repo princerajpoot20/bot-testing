@@ -1,7 +1,8 @@
 name: Tools preview on PR level
 
 on:
-  workflow_dispatch:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
 
 jobs:
   suggestChanges:
