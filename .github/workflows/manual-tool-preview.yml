@@ -1,46 +1,42 @@
-name: Review with Suggestions for Tool Changes
+name: List of all the tools used in AsyncAPI
 
 on:
-  pull_request_target:
-    types:
-      - synchronize
-      - edited
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - '**'
 
 jobs:
-  reviewSuggestions:
+  regenerateTools:
     if: github.repository == 'princerajpoot20/bot-testing'
     env:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+    name: Regenerate tools.json
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout Base Branch
-      uses: actions/checkout@v3
-      with:
-        ref: ${{ github.event.pull_request.base.ref }}
-        path: base
-    - name: Checkout PR Branch
-      uses: actions/checkout@v3
-      with:
-        ref: ${{ github.event.pull_request.head.ref }}
-        path: pr
-    - name: Use Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16.x
-    - name: Install dependencies and Regenerate for PR
-      run: |
-        cd pr
-        npm install
-        npm run generate:tools
-    - name: Check and Suggest Changes
-      run: |
-        git diff -U0 base pr > changes.diff
-        while IFS= read -r line; do
-          line_content="${line#+}"
-          file_name=$(echo "$line" | cut -d' ' -f2)
-          start_line=$(echo "$line" | cut -d' ' -f3 | cut -d',' -f1)
-          gh pr review ${{ github.event.pull_request.number }} --comment -b "I suggest this change on \`$file_name\`:
-          \`\`\`suggestion
-          $line_content
-          \`\`\`"
-        done < changes.diff
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Regenerate
+        run: npm run generate:tools
+
+      - name: Create Pull Request with new tools.json version
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          commit-message: 'chore: update tools.json'
+          committer: princerajpoot-bot <info@asyncapi.io>
+          author: princerajpoot-bot <info@asyncapi.io>
+          title: 'chore: update tools.json'
+          branch: update-tools/${{ github.run_number }} # Use run number to ensure unique branch name
+          base: ${{ github.head_ref }} # Base is the branch of the original PR from the contributor
