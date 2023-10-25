@@ -85,7 +85,7 @@
                 "title": "Springwolf",
                 "description": "Automated documentation for async APIs built with Spring Boot. Like Springfox for AsyncAPI. Auto-generates an AsyncAPI document and a web UI.",
                 "links": {
-                    "websiteUrl": "https://www.springwolf.com",
+                    "websiteUrl": "https://www.springwolf.in",
                     "repoUrl": "https://github.com/springwolf/springwolf-core"
                 },
                 "filters": {
