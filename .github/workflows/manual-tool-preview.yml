@@ -1,46 +1,43 @@
-name: Tools preview on PR level
+name: List of all the tools used in AsyncAPI
 
 on:
+  workflow_dispatch:
   pull_request_target:
     types:
       - synchronize
       - edited
 
 jobs:
-  suggestChanges:
-    if: github.repository == 'princerajpoot20/bot-testing'
-    env:
+  regenerateTools:
+      if: github.repository == 'princerajpoot20/bot-testing'
+      env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16.x
-      - name: Install dependencies
-        run: npm install
-      - name: Regenerate
-        run: npm run generate:tools
-      - name: Check for changes
-        id: git-check
-        run: |
-          git diff --exit-code || echo "tools::changed"
-          echo ::set-output name=tools_changed::$(git diff --exit-code; echo $?)
-      - name: Commit and push if there are changes
-        if: steps.git-check.outputs.tools_changed == '1'
-        run: |
-          git config --global user.name 'princerajpoot-bot'
-          git config --global user.email 'princerajpoot-bot@github.com'
-          git add -A
-          git commit -m "Regenerate tools section"
-          git push
-      - name: Create PR Review with suggestions
-        if: steps.git-check.outputs.tools_changed == '1'
-        run: |
-          gh pr review ${{ github.event.pull_request.number }} --comment -b "Suggested changes after regenerating the tools section. Please review and merge if appropriate."
-        env:
-          GH_CLI_TOKEN: ${{ secrets.GH_TOKEN }}
+      name: Regenerate tools.json
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v3
+          with:
+            ref: ${{ github.event.pull_request.head.sha }}
+        - name: Use Node.js
+          uses: actions/setup-node@v3
+          with:
+            node-version: 16.x
+        - name: Install dependencies
+          run: npm install
+        - name: Regenerate
+          run: npm run generate:tools
+        - name: Check for changes and create patch
+          id: check-changes
+          run: |
+            git diff > tools.diff
+            if [[ -s tools.diff ]]; then
+              echo "::set-output name=has_changes::true"
+            fi
+        - name: Post review comment with suggestions
+          if: steps.check-changes.outputs.has_changes == 'true'
+          run: |
+            BODY="Suggested changes after regenerating the tools section:\n\`\`\`diff\n$(cat tools.diff)\n\`\`\`"
+            gh pr review ${{ github.event.pull_request.number }} --comment -b "$BODY"
+          env:
+            GH_CLI_TOKEN: ${{ secrets.GH_TOKEN }}
