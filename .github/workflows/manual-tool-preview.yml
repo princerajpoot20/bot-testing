@@ -42,7 +42,9 @@ jobs:
           while IFS= read -r line; do
             if [[ "$line" == +* ]]; then
               suggestion="${line#+}"
-              BODY+="\n\`\`\`suggestion\n$suggestion\n\`\`\`"
+              if [[ ! -z "$suggestion" && "$suggestion" != ' ' ]]; then
+                BODY+="\n\`\`\`suggestion\n$suggestion\n\`\`\`"
+              fi
             fi
           done < tools.diff
           echo "BODY=$BODY" >> $GITHUB_ENV
