@@ -1,32 +1,4 @@
 {
-    "APIs": {
-        "description": "The following is a list of APIs that expose functionality related to AsyncAPI.",
-        "toolsList": [
-            {
-                "title": "AsyncAPI-Directory by APIs.guru",
-                "description": "Directory of asynchronous API specifications in AsyncAPI format.",
-                "links": {
-                    "websiteUrl": "https://apis.guru/asyncapi-directory/",
-                    "repoUrl": "https://github.com/APIs-guru/asyncapi-directory"
-                },
-                "filters": {
-                    "language": "JavaScript",
-                    "technology": ["Node.js", "Liquid"],
-                    "categories": ["api", "directory"]
-                }
-            },
-            {
-                "title": "API Tracker - AsyncAPI specs",
-                "description": "Explore APIs and companies with public AsyncAPI specifications.",
-                "links": {
-                    "websiteUrl": "https://apitracker.io/specifications/asyncapi"
-                },
-                "filters": {
-                    "categories": ["api", "directory"]
-                }
-            }
-        ]
-    },
     "AsyncAPI Generator Templates": {
         "description": "The following is a list of templates compatible with AsyncAPI Generator. You can use them to generate apps, clients or documentation from your AsyncAPI documents.",
         "toolsList": []
