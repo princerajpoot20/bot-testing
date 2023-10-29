@@ -1,0 +1,42 @@
+name: List of all the tools used in AsyncAPI
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  regenerateTools:
+    if: github.repository == 'princerajpoot20/bot-testing'
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+    name: Regenerate tools.json
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Regenerate
+        run: npm run generate:tools
+
+      - name: Create Pull Request with new tools.json version
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          commit-message: 'chore: update tools.json'
+          committer: princerajpoot-bot <info@asyncapi.io>
+          author: princerajpoot-bot <info@asyncapi.io>
+          title: 'chore: update tools.json'
+          branch: update-tools/${{ github.run_number }} # Use run number to ensure unique branch name
+          base: ${{ github.head_ref }} # Base is the branch of the original PR from the contributor
