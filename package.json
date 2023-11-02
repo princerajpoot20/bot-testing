@@ -5,15 +5,17 @@
     "main": "index.js",
     "types": "index.d.ts",
     "scripts": {
-        "test": "npm run build && nyc mocha",
+        "test": "npm run lint && npm run build && nyc mocha",
         "build": "npm run bundle",
         "generate:assets": "npm run build",
         "prepublishOnly": "npm run build",
         "bundle": "cd tools/bundler && npm i && npm run bundle",
         "startNewVersion": "newVersion=$npm_config_new_version node scripts/add-new-version.js",
-        "lint": "echo 'No linter integrated yet'",
+        "lint": "npm run lint:json && npm run validate:schema",
+        "lint:json": "jsonlint 'schemas/**/*.json'",
+        "validate:schema": "ajv compile -s 'schemas/**/*.json' -r 'schemas/**/*.json'",
         "bump:version": "npm --no-git-tag-version --allow-same-version version $VERSION"
-    },
+      },      
     "repository": {
         "type": "git",
         "url": "git+https://github.com/asyncapi/spec-json-schemas.git"
