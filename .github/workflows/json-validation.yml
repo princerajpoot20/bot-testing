@@ -1,0 +1,22 @@
+name: JSON Schema Validation
+
+on:
+  pull_request: {}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Spectral
+        run: npm install -g spectral
+
+      - name: Lint and validate JSON Schema files
+        run: spectral lint .
+
+      - name: Fail if JSON Schema files are not valid
+        if: ${{ steps.linter.outputs.success != true }}
+        run: exit 1
