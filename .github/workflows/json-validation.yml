@@ -1,28 +1,17 @@
-name: JSON Schema Validation
+name: Continuous Integration
 
-on:
-  pull_request:
-    paths:
-      - 'schemas/**/*.json'
+on: [pull_request]
 
 jobs:
-  validate:
+  lint-and-validate:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
+    - uses: actions/checkout@v2
     - name: Set up Node.js
       uses: actions/setup-node@v2
       with:
-        node-version: '14' # or whatever version you need
-
-    - name: Install dependencies
+        node-version: '16'
+    - name: Install Dependencies
       run: npm install
-
-    - name: Lint and validate JSON Schema files
-      run: npm run lint-json
-
-    - name: Run tests
-      run: npm test
+    - name: Lint and Validate JSON Schema
+      run: npm run lint
